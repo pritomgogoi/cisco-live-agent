@@ -83,7 +83,21 @@ async def agent_loop(session, tools, user_prompt):
 
                 print(f"  -> Calling: {tool_name}({json.dumps(tool_args, indent=2)})")
 
-                result = await session.call_tool(tool_name, tool_args)
+                try:
+                    result = await session.call_tool(tool_name, tool_args)
+                except Exception as e:
+                    print(f"  !! Tool call failed: {e}")
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "content": f"Error calling tool: {e}",
+                    })
+                    continue
+
+                if result.isError:
+                    print(f"  !! Tool returned error: {result.content}")
+                else:
+                    print(f"  <- Result: {result.content}")
 
                 messages.append({
                     "role": "tool",
