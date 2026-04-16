@@ -1,6 +1,7 @@
 """Quick script to test MCP tool calls directly."""
 
 import asyncio
+import json
 import os
 import sys
 
@@ -17,6 +18,7 @@ SCC_API_KEY = os.environ["SCC_API_KEY"]
 
 async def test():
     tool_name = sys.argv[1] if len(sys.argv) > 1 else "platform-management_list_organizations"
+    tool_args = json.loads(sys.argv[2]) if len(sys.argv) > 2 else {"arguments": {}}
     headers = {"Authorization": f"Bearer {SCC_API_KEY}"}
 
     async with streamablehttp_client(MCP_SERVER_URL, headers=headers) as (r, w, _):
@@ -29,7 +31,8 @@ async def test():
                     print(f"  {t.name}: {t.description}")
                 return
 
-            result = await s.call_tool(tool_name, {})
+            print(f"Calling {tool_name} with args: {tool_args}")
+            result = await s.call_tool(tool_name, tool_args)
             print(result)
 
 

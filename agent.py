@@ -83,7 +83,8 @@ async def agent_loop(session, tools, user_prompt):
 
             for tool_call in choice.message.tool_calls:
                 tool_name = tool_call.function.name
-                tool_args = json.loads(tool_call.function.arguments)
+                raw_args = json.loads(tool_call.function.arguments)
+                tool_args = raw_args if "arguments" in raw_args else {"arguments": raw_args}
 
                 print(f"  -> Calling: {tool_name}({json.dumps(tool_args, indent=2)})")
 
