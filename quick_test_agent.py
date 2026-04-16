@@ -1,4 +1,4 @@
-"""Quick test to verify LLM access."""
+1"""Quick test to verify LLM access."""
 
 import os
 from openai import OpenAI

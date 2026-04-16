@@ -1,26 +1,60 @@
-# Cisco Live Agent
+# security-agent-mcp
 
-Quick test agent to verify LLM access via an OpenAI-compatible endpoint.
+Security Cloud Control Agent using MCP tools.
 
-## Setup
+## Requirements
 
-1. Install dependencies:
+- Python `>=3.13`
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+## Installation
 
-2. Set environment variables:
+Install the project dependencies from `pyproject.toml`:
 
-   ```bash
-   export LLM_BASE_URL="https://your-llm-endpoint/v1"
-   export LLM_API_KEY="your-api-key"
-   ```
+```bash
+pip install .
+```
 
-3. Run the test:
+This installs:
 
-   ```bash
-   python quick_test_agent.py
-   ```
+- `mcp`
+- `openai`
 
-This sends a simple prompt to the configured LLM and prints the response, confirming connectivity and authentication.
+## Environment Variables
+
+Set the variables required for your target workflow.
+
+For the quick LLM connectivity test:
+
+```bash
+export LLM_BASE_URL="https://your-llm-endpoint/v1"
+export LLM_API_KEY="your-api-key"
+```
+
+For the Security Cloud Control MCP agent:
+
+```bash
+export LLM_BASE_URL="https://your-llm-endpoint/v1"
+export LLM_API_KEY="your-api-key"
+export SCC_API_KEY="your-scc-api-key"
+export MCP_SERVER_URL="https://mcp.security.cisco.com/mcp"
+```
+
+`MCP_SERVER_URL` is optional. If not set, the agent defaults to `https://mcp.security.cisco.com/mcp`.
+
+## Usage
+
+Run the quick test:
+
+```bash
+python quick_test_agent.py
+```
+
+This sends a simple prompt to the configured OpenAI-compatible endpoint and prints the response.
+
+Run the interactive Security Cloud Control agent:
+
+```bash
+python agent.py
+```
+
+The agent connects to the Security Cloud Control MCP server, lists the available tools, and then accepts interactive requests.

@@ -1,0 +1,9 @@
+[project]
+name = "security-agent-mcp"
+version = "0.1.0"
+description = "Security Cloud Control Agent using MCP tools"
+requires-python = ">=3.13"
+dependencies = [
+    "mcp",
+    "openai",
+]
