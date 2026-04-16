@@ -8,7 +8,11 @@ import asyncio
 import json
 import os
 
-from mcp.client.sse import sse_client
+from dotenv import load_dotenv
+
+load_dotenv()
+
+from mcp.client.streamable_http import streamablehttp_client
 from mcp import ClientSession
 from openai import OpenAI
 
@@ -22,7 +26,7 @@ llm_client = OpenAI(
     base_url=os.environ["LLM_BASE_URL"],
     api_key=os.environ["LLM_API_KEY"],
 )
-MODEL = "gpt-4o"
+MODEL = os.getenv("OPENAI_MODEL", "gpt-4o")
 
 SYSTEM_PROMPT = """You are a Cisco Security Cloud Control assistant that helps with user onboarding and management.
 
@@ -112,7 +116,7 @@ async def main():
         "Authorization": f"Bearer {SCC_API_KEY}",
     }
 
-    async with sse_client(MCP_SERVER_URL, headers=headers) as (read, write):
+    async with streamablehttp_client(MCP_SERVER_URL, headers=headers) as (read, write, _):
         async with ClientSession(read, write) as session:
             await session.initialize()
 
@@ -120,6 +124,7 @@ async def main():
             tools = tools_result.tools
 
             print(f"Connected to Security Cloud Control MCP server.")
+            print(f"Using OpenAI model: {MODEL}")
             print(f"{len(tools)} tools available.\n")
 
             for tool in tools:
