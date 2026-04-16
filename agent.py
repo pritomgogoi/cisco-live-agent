@@ -8,7 +8,7 @@ import asyncio
 import json
 import os
 
-from mcp.client.streamable_http import streamablehttp_client
+from mcp.client.sse import sse_client
 from mcp import ClientSession
 from openai import OpenAI
 
@@ -112,7 +112,7 @@ async def main():
         "Authorization": f"Bearer {SCC_API_KEY}",
     }
 
-    async with streamablehttp_client(MCP_SERVER_URL, headers=headers) as (read, write, _):
+    async with sse_client(MCP_SERVER_URL, headers=headers) as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()
 
