@@ -7,6 +7,7 @@ to automate user onboarding and management tasks.
 import asyncio
 import json
 import os
+import re
 
 from dotenv import load_dotenv
 
@@ -59,14 +60,11 @@ def mcp_tools_to_openai_tools(mcp_tools):
     return tools
 
 
-async def agent_loop(session, tools, user_prompt):
+async def agent_loop(session, tools, messages, user_prompt):
     """Run the agent loop: prompt -> LLM -> tool calls -> repeat."""
     openai_tools = mcp_tools_to_openai_tools(tools)
 
-    messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": user_prompt},
-    ]
+    messages.append({"role": "user", "content": user_prompt})
 
     while True:
         response = llm_client.chat.completions.create(
@@ -79,7 +77,12 @@ async def agent_loop(session, tools, user_prompt):
 
         # If the LLM returns a text response, the task is complete
         if choice.finish_reason == "stop":
-            print(f"\nAgent: {choice.message.content}\n")
+            messages.append(choice.message)
+            content = choice.message.content
+            content = re.sub(r'\*\*(.+?)\*\*', r'\033[1m\1\033[22m', content)
+            content = re.sub(r'\*(.+?)\*', r'\1', content)
+            content = re.sub(r'^#{1,3}\s+', '', content, flags=re.MULTILINE)
+            print(f"\n\033[94mAgent:\033[0m \033[93m{content}\033[0m\n")
             break
 
         # If the LLM wants to call tools, execute them via MCP
@@ -91,7 +94,7 @@ async def agent_loop(session, tools, user_prompt):
                 raw_args = json.loads(tool_call.function.arguments)
                 tool_args = raw_args.get("arguments", raw_args) if "arguments" in raw_args else raw_args
 
-                print(f"  -> Calling: {tool_name}({json.dumps(tool_args, indent=2)})")
+                print(f"\033[91m  -> Calling: {tool_name}({json.dumps(tool_args, indent=2)})\033[0m")
 
                 try:
                     result = await session.call_tool(tool_name, tool_args)
@@ -105,9 +108,9 @@ async def agent_loop(session, tools, user_prompt):
                     continue
 
                 if result.isError:
-                    print(f"  !! Tool returned error: {result.content}")
+                    print(f"\033[91m  !! Tool returned error: {result.content}\033[0m")
                 else:
-                    print(f"  <- Result: {result.content}")
+                    print(f"\033[92m  <- Result: {result.content}\033[0m")
 
                 messages.append({
                     "role": "tool",
@@ -129,23 +132,25 @@ async def main():
             tools_result = await session.list_tools()
             tools = tools_result.tools
 
-            print(f"Connected to Security Cloud Control MCP server.")
-            print(f"Using OpenAI model: {MODEL}")
-            print(f"{len(tools)} tools available.\n")
+            print(f"\033[94mConnected to Security Cloud Control MCP server.")
+            print(f"Using OpenAI model: {MODEL}\033[0m")
+            print(f"\033[92m{len(tools)} tools available.\033[0m\n")
 
             for tool in tools:
-                print(f"  - {tool.name}: {tool.description}")
+                print(f"\033[93m  - {tool.name}: {tool.description}\033[0m")
 
             print("\nType your request (or 'quit' to exit):\n")
 
+            messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+
             while True:
-                user_input = input("You: ").strip()
+                user_input = input("\033[94mYou:\033[0m ").strip()
                 if not user_input:
                     continue
                 if user_input.lower() in ("quit", "exit"):
                     print("Goodbye!")
                     break
-                await agent_loop(session, tools, user_input)
+                await agent_loop(session, tools, messages, user_input)
 
 
 if __name__ == "__main__":
