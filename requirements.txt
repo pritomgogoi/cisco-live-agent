@@ -2,3 +2,5 @@ openai>=1.0.0
 mcp[cli]
 boto3
 python-dotenv
+langgraph
+langchain-aws
