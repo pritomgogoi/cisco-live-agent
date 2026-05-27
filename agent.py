@@ -8,6 +8,7 @@ import asyncio
 import json
 import os
 import re
+import time
 
 from dotenv import load_dotenv
 
@@ -68,11 +69,21 @@ async def agent_loop(session, tools, messages, user_prompt):
     messages.append({"role": "user", "content": user_prompt})
 
     while True:
-        response = llm_client.chat.completions.create(
-            model=MODEL,
-            messages=messages,
-            tools=openai_tools,
-        )
+        for attempt in range(5):
+            try:
+                response = llm_client.chat.completions.create(
+                    model=MODEL,
+                    messages=messages,
+                    tools=openai_tools,
+                )
+                break
+            except Exception as e:
+                if "429" in str(e) and attempt < 4:
+                    wait = 2 ** attempt * 10
+                    print(f"\033[93m  Rate limited, retrying in {wait}s...\033[0m")
+                    time.sleep(wait)
+                else:
+                    raise
 
         choice = response.choices[0]
 
