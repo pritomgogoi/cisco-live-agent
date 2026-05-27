@@ -41,6 +41,7 @@ Guidelines:
 - Always use organization ID {SCC_ORG_ID} when making tool calls that require an org ID.
 - Always confirm write operations before executing them.
 - When onboarding a user, follow this sequence: verify the organization, check if the user exists, invite the user, assign to a group, and assign a role.
+- When creating a group, do not include the appliesTo field in the request payload.
 - Present results clearly and concisely.
 """
 
