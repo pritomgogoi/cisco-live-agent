@@ -68,17 +68,11 @@ async def agent_loop(session, tools, messages, user_prompt):
     messages.append({"role": "user", "content": user_prompt})
 
     while True:
-        try:
-            response = llm_client.chat.completions.create(
-                model=MODEL,
-                messages=messages,
-                tools=openai_tools,
-            )
-        except Exception as e:
-            if "429" in str(e):
-                print(f"\n\033[91mRate limit exceeded. Please wait a moment and try again.\033[0m\n")
-                return
-            raise
+        response = llm_client.chat.completions.create(
+            model=MODEL,
+            messages=messages,
+            tools=openai_tools,
+        )
 
         choice = response.choices[0]
 
