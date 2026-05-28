@@ -1,5 +1,3 @@
-1"""Quick test to verify LLM access."""
-
 import os
 from openai import OpenAI
 

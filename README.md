@@ -46,7 +46,7 @@ export MCP_SERVER_URL="https://mcp.security.cisco.com/mcp"
 Run the quick test:
 
 ```bash
-python quick_test_agent.py
+python simple_agent_test.py
 ```
 
 This sends a simple prompt to the configured OpenAI-compatible endpoint and prints the response.
