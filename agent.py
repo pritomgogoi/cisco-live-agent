@@ -47,7 +47,12 @@ Guidelines:
 
 
 def mcp_tools_to_openai_tools(mcp_tools):
-    """Convert MCP tool definitions to OpenAI function-calling format."""
+    """
+    Takes a list of MCP tool objects returned by the MCP server and converts them into the
+    OpenAI function-calling schema format. Each tool's name, description, and input schema
+    are mapped to the structure expected by the OpenAI chat completions API so the LLM can
+    select and invoke them.
+    """
     tools = []
     for tool in mcp_tools:
         tools.append({
@@ -62,7 +67,13 @@ def mcp_tools_to_openai_tools(mcp_tools):
 
 
 async def agent_loop(session, tools, messages, user_prompt):
-    """Run the agent loop: prompt -> LLM -> tool calls -> repeat."""
+    """
+    Runs a single turn of the agent loop for a given user prompt. Appends the user message
+    to the conversation history, then repeatedly calls the LLM until it produces a final
+    text response. If the LLM requests tool calls, each tool is executed against the MCP
+    session and the results are fed back into the conversation before the next LLM call.
+    Prints the agent's final response to the terminal with basic markdown-to-ANSI formatting.
+    """
     openai_tools = mcp_tools_to_openai_tools(tools)
 
     messages.append({"role": "user", "content": user_prompt})
@@ -121,7 +132,13 @@ async def agent_loop(session, tools, messages, user_prompt):
 
 
 async def main():
-    """Connect to the MCP server and start the interactive agent."""
+    """
+    Entry point for the agent. Establishes an authenticated connection to the Cisco Security
+    Cloud Control MCP server, fetches the list of available tools, and prints them to the
+    terminal. Then starts an interactive REPL where the user can type requests in plain
+    language. Each request is handled by agent_loop(), which drives the LLM and any
+    tool calls needed to fulfill it. Type 'quit' or 'exit' to stop.
+    """
     headers = {
         "Authorization": f"Bearer {SCC_API_KEY}",
     }
