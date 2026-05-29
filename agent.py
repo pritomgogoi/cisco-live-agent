@@ -15,7 +15,7 @@ load_dotenv()
 
 from mcp.client.streamable_http import streamablehttp_client
 from mcp import ClientSession
-from openai import OpenAI
+from openai import OpenAI, RateLimitError
 
 
 # MCP Server configuration
@@ -79,11 +79,16 @@ async def agent_loop(session, tools, messages, user_prompt):
     messages.append({"role": "user", "content": user_prompt})
 
     while True:
-        response = llm_client.chat.completions.create(
-            model=MODEL,
-            messages=messages,
-            tools=openai_tools,
-        )
+        try:
+            response = llm_client.chat.completions.create(
+                model=MODEL,
+                messages=messages,
+                tools=openai_tools,
+            )
+        except RateLimitError:
+            print("\n\033[91mRate limited. Please try again in a few minutes.\033[0m\n")
+            messages.pop()
+            return
 
         choice = response.choices[0]
 
